@@ -63,6 +63,10 @@
   <li>Results table with PSNR / SSIM versus the INRIA reference, plus FPS at 720p, 1080p, and 4K.</li>
 </ul>
 
+<p>
+  Our project answers four questions: how visually faithful our renderer is (PSNR / SSIM versus the INRIA reference), how fast it runs (FPS at 1080p, broken down per pipeline stage), how much GPU acceleration buys us over the CPU reference, and how it scales as the Gaussian count grows.
+</p>
+
 <h3>What we hope to deliver, in priority order</h3>
 <ol>
   <li>GPU radix sort replacing bitonic.</li>
@@ -74,7 +78,7 @@
 
 <h2>Schedule</h2>
 <p>
-  Ben owns the math and projection. Kaan owns the GPU pipeline and performance. Alex owns SH evaluation, the viewer, and benchmarking.
+  We split the work so that Ben handles the projection math and the <code>.ply</code> loader, Kaan handles the GPU pipeline and the performance work, and Alex handles spherical harmonic evaluation, the viewer, and benchmarking.
 </p>
 <ul>
   <li><strong>Week 1 (Apr 8-13):</strong> Set up the WebGPU project. Implement the <code>.ply</code> parser. Get 3D-to-2D Gaussian projection working in the CPU reference. Build the orbit camera and viewer shell.</li>
