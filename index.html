@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Splat the Web - CS 184 Final Project Proposal</title>
+<style>
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #000;
+    background: #fff;
+    max-width: 720px;
+    margin: 40px auto;
+    padding: 0 28px 60px;
+    line-height: 1.45;
+    font-size: 11pt;
+  }
+  h1 { font-size: 18pt; margin: 0 0 4px; }
+  h2 { font-size: 13pt; margin: 22px 0 6px; }
+  h3 { font-size: 11pt; margin: 14px 0 4px; }
+  p { margin: 0 0 10px; }
+  ul, ol { margin: 0 0 10px; padding-left: 24px; }
+  li { margin-bottom: 3px; }
+  .meta { color: #444; font-size: 10pt; margin: 0 0 16px; }
+  a { color: #1155cc; }
+  code { font-family: Consolas, "Courier New", monospace; font-size: 10pt; }
+</style>
+</head>
+<body>
+
+<h1>Splat the Web: A Real-Time WebGPU Renderer for 3D Gaussian Splatting</h1>
+<p class="meta">
+  CS 184: Computer Graphics and Imaging | Spring 2026 Final Project Proposal<br>
+  Team: Ben Shamloufard, Kaan Kont, Alex Zhu<br>
+  Repo: <a href="https://github.com/alexwzhu/Compsci184-FinalProj">github.com/alexwzhu/Compsci184-FinalProj</a>
+</p>
+
+<h2>Summary</h2>
+<p>
+  Splat the Web is a real-time 3D Gaussian Splatting renderer written in WebGPU. We take pre-trained Gaussian models from existing trainers and build the entire rendering engine from scratch, so anyone with a modern browser can fly through photorealistic scans of real scenes.
+</p>
+
+<h2>Problem Description</h2>
+<p>
+  Given a set of photos of a real scene from many angles, we want to reconstruct it as a 3D representation and render new views of it in a browser at interactive frame rates. 3D Gaussian Splatting (Kerbl et al., SIGGRAPH 2023) does this by representing the scene as millions of semi-transparent 3D Gaussians. Each one stores a position, a covariance matrix (a scale and a rotation quaternion), an opacity, and spherical harmonic coefficients for view-dependent color. Because Gaussians can be rasterized rather than ray-marched, the technique runs above 100 FPS at 1080p. Comparable NeRFs take seconds per frame.
+</p>
+<p>
+  Our project is the renderer, not the trainer. We use existing open-source pipelines (the original INRIA code, gsplat, or nerfstudio) to pre-train Gaussian models offline. The same way Project 3 loaded <code>.dae</code> files that other tools produced, we load <code>.ply</code> files of trained Gaussians and turn them into pixels. Every line of code that does that conversion is ours.
+</p>
+<p>
+  The hard parts are getting the math right and getting the GPU pipeline fast. Each 3D covariance has to be projected to a 2D screen-space ellipse using a Jacobian that goes unstable near the camera. Millions of Gaussians have to be depth-sorted per tile every frame, which means writing a parallel sort, prefix sums, and tile binning in WebGPU compute shaders by hand. To stay honest about correctness, we also build a slow but readable CPU reference renderer in TypeScript. Any disagreement between the GPU output and the reference flags a bug.
+</p>
+
+<h2>Goals and Deliverables</h2>
+
+<h3>What we plan to deliver</h3>
+<ul>
+  <li>WebGPU renderer that loads pre-trained <code>.ply</code> Gaussian models and runs at 30+ FPS at 1080p on a modern laptop.</li>
+  <li>Full pipeline written from scratch: <code>.ply</code> parser, frustum culling, 3D-to-2D Gaussian projection, tile binning, GPU bitonic sort, spherical harmonics up to degree 2, and front-to-back alpha compositing.</li>
+  <li>Three scenes from the Mip-NeRF 360 dataset (garden, bicycle, room) running in our viewer.</li>
+  <li>CPU reference renderer for correctness checking.</li>
+  <li>Interactive camera with orbit and WASD fly-through.</li>
+  <li>Live web demo on GitHub Pages.</li>
+  <li>Results table with PSNR / SSIM versus the INRIA reference, plus FPS at 720p, 1080p, and 4K.</li>
+</ul>
+
+<h3>What we hope to deliver, in priority order</h3>
+<ol>
+  <li>GPU radix sort replacing bitonic.</li>
+  <li>Spherical harmonics degree 3 for fine specular effects.</li>
+  <li>Mip-splatting style anti-aliasing (Yu et al., CVPR 2024).</li>
+  <li>Gaussian compression with a quality vs file size analysis.</li>
+  <li>A custom Berkeley scene captured on phones, processed through COLMAP and a Gaussian trainer.</li>
+</ol>
+
+<h2>Schedule</h2>
+<p>
+  Ben owns the math and projection. Kaan owns the GPU pipeline and performance. Alex owns SH evaluation, the viewer, and benchmarking.
+</p>
+<ul>
+  <li><strong>Week 1 (Apr 8-13):</strong> Set up the WebGPU project. Implement the <code>.ply</code> parser. Get 3D-to-2D Gaussian projection working in the CPU reference. Build the orbit camera and viewer shell.</li>
+  <li><strong>Week 2 (Apr 14-20):</strong> Move the pipeline to the GPU. Tile binning, bitonic sort, and alpha compositing in compute shaders. Wire SH evaluation into the compositing pass. Milestone deliverables due Apr 20.</li>
+  <li><strong>Week 3 (Apr 21-27):</strong> Load all three scenes. Performance tuning, profiling, per-stage timing overlay. Start writing the report.</li>
+  <li><strong>Week 4 (Apr 28-May 4):</strong> Polish the demo. Record the video. Finish the final report. Deploy to GitHub Pages. Final deliverables due May 4.</li>
+</ul>
+
+<h2>Resources</h2>
+
+<p><strong>Papers:</strong></p>
+<ul>
+  <li>Kerbl et al. <em>3D Gaussian Splatting for Real-Time Radiance Field Rendering.</em> SIGGRAPH 2023.</li>
+  <li>Zwicker et al. <em>EWA Splatting.</em> IEEE TVCG 2002.</li>
+  <li>Yu et al. <em>Mip-Splatting: Alias-free 3D Gaussian Splatting.</em> CVPR 2024.</li>
+</ul>
+
+<p><strong>Reference codebases (used for training data and PSNR comparison, not as our renderer):</strong></p>
+<ul>
+  <li><a href="https://github.com/graphdeco-inria/gaussian-splatting">graphdeco-inria/gaussian-splatting</a> for training and reference renders.</li>
+  <li><a href="https://github.com/antimatter15/splat">antimatter15/splat</a> for the <code>.ply</code> format reference.</li>
+  <li><a href="https://github.com/cvlab-epfl/gaussian-splatting-web">cvlab-epfl/gaussian-splatting-web</a> as a WebGPU comparison point.</li>
+</ul>
+
+<p><strong>Dataset:</strong> Mip-NeRF 360 scenes with pre-trained Gaussian models distributed alongside the original 3DGS paper.</p>
+
+<p><strong>Software:</strong> TypeScript, WebGPU, WGSL compute shaders, Chrome 115+, COLMAP for the stretch capture, Python with NumPy and scikit-image for benchmarking, GitHub Pages for hosting.</p>
+
+<p><strong>Hardware:</strong> Berkeley HPC with GPUs or desktop GPU or cloud instance for the one-time training preprocessing.</p>
+
+</body>
+</html>
