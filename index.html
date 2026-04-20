@@ -152,7 +152,7 @@
   We're building on top of existing work. The <code>.ply</code> files we load are <em>pre-trained</em>. Someone else's trainer (INRIA, gsplat, or nerfstudio) ran gradient descent against real photographs to produce them, and we don't touch any of that training code.
 </p>
 
-<h2>What's Working So Far</h2>
+<h2>What's Working</h2>
 <ul>
   <li><strong>PLY parser:</strong> reads the full INRIA binary format, including position, scale, rotation quaternion, opacity, and all 48 SH coefficients per Gaussian.</li>
   <li><strong>3D&rarr;2D projection on CPU:</strong> EWA covariance projection <code>&Sigma;' = J W &Sigma; W<sup>T</sup> J<sup>T</sup></code>, with the Jacobian evaluated per-Gaussian in camera space.</li>
@@ -160,20 +160,6 @@
   <li><strong>Camera:</strong> orbit (click-drag), zoom (scroll), pan (right-click-drag), WASD fly-through, and auto-fit to the scene on load.</li>
   <li><strong>Tested on real data:</strong> a 14,526-Gaussian Luigi model from an actual trainer renders end-to-end, not just our synthetic scenes.</li>
 </ul>
-<div class="pipeline-row">
-  <span class="pill done">Parse .ply</span><span class="arrow">&rarr;</span>
-  <span class="pill done">Frustum Cull</span><span class="arrow">&rarr;</span>
-  <span class="pill done">3D&rarr;2D Proj</span><span class="arrow">&rarr;</span>
-  <span class="pill todo">Tile Bin</span><span class="arrow">&rarr;</span>
-  <span class="pill todo">Depth Sort</span><span class="arrow">&rarr;</span>
-  <span class="pill done">SH Color</span><span class="arrow">&rarr;</span>
-  <span class="pill done">Alpha Comp</span><span class="arrow">&rarr;</span>
-  <span class="pill done">Display</span>
-</div>
-<p class="pipeline-legend">
-  <span style="color:#2a7d2a;">&#9632;</span> Implemented (CPU) &emsp;
-  <span style="color:#888;">&#9632;</span> Planned (GPU)
-</p>
 
 <h2>Preliminary Results: Before vs. After</h2>
 <div class="figures">
@@ -189,13 +175,13 @@
 
 <h2>Progress Reflection</h2>
 <p>
-  We're roughly on schedule. The CPU side (projection, compositing, camera) is working and the output matches what we expect visually. Our biggest headache was the covariance projection. Deriving the Jacobian from the Zwicker EWA paper was the easy part, but we got the matrix-multiplication order wrong a couple of times (row-major vs. column-major confusion) and spent a while debugging blobs that came out squished in weird directions. Now that the CPU renderer works, porting to the GPU feels a lot less scary, because we can diff our compute-shader output against it pixel by pixel. Weeks 3 and 4 are the WebGPU compute shaders (tile binning, bitonic sort, SH degree 2, and alpha compositing), plus loading the Mip-NeRF 360 scenes with over a million Gaussians each, and running PSNR/SSIM against the INRIA reference renderer for the final report.
+  We are on schedule. The CPU side (projection, compositing, camera) is working and the output matches what we expect. Our biggest challenge was the covariance projection. Deriving the Jacobian from the Zwicker EWA paper was the easy part, but we got the matrix-multiplication order wrong a couple of times (row-major vs. column-major confusion) and spent a while debugging blobs that came out squished in weird directions. Weeks 3 and 4 are the WebGPU compute shaders (tile binning, bitonic sort, SH degree 2, and alpha compositing), plus loading the Mip-NeRF 360 scenes with over a million Gaussians each, and running PSNR/SSIM against the INRIA reference renderer for the final report.
 </p>
 
 <h2>Updated Schedule</h2>
 <table>
   <tr><th>Week</th><th>Tasks</th><th>Status</th></tr>
-  <tr><td>1-2 (Apr 7-20)</td><td>PLY parser, CPU projection + compositing, camera controls</td><td class="done">Done</td></tr>
+  <tr><td>1-2 (Apr 7-20)</td><td>PLY parser, CPU projection + compositing, camera controls</td><td class="todo">Done</td></tr>
   <tr><td>3 (Apr 21-27)</td><td>WebGPU init, projection + tile-binning + SH shaders, load Mip-NeRF 360</td><td class="todo">Planned</td></tr>
   <tr><td>4 (Apr 28-May 4)</td><td>Bitonic sort + GPU compositing, CPU/GPU validation, PSNR/SSIM, final report &amp; deploy</td><td class="todo">Planned</td></tr>
 </table>
