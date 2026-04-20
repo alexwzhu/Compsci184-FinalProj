@@ -147,30 +147,10 @@
   We're building a real-time 3D Gaussian Splatting renderer in WebGPU. The input is a pre-trained <code>.ply</code> file full of Gaussians, and the output is pixels on a canvas. The parser, 3D&rarr;2D projection, sorting, SH evaluation, and alpha compositing in between are all code we wrote. Right now we have a working CPU reference renderer. It loads real trained data, projects and composites the Gaussians correctly, and you can orbit and fly around with the camera.
 </p>
 
-<h2>Scope: What We Build vs. What We Consume</h2>
+<h2>What we are using</h2>
 <p>
-  We're building on top of existing work, so it helps to be clear about where the line is. The <code>.ply</code> files we load are <em>pre-trained</em>. Someone else's trainer (INRIA, gsplat, or nerfstudio) ran gradient descent against real photographs to produce them, and we don't touch any of that training code. It's basically the HW3 setup. HW3 loaded <code>.dae</code> files that Blender or Maya had already produced, and we load <code>.ply</code> files that a trainer already produced. Everything between reading the file and putting pixels on screen is ours.
+  We're building on top of existing work. The <code>.ply</code> files we load are <em>pre-trained</em>. Someone else's trainer (INRIA, gsplat, or nerfstudio) ran gradient descent against real photographs to produce them, and we don't touch any of that training code.
 </p>
-<div class="scope-box">
-  <div class="consumed">
-    <h4>Consumed (not ours)</h4>
-    <ul>
-      <li>Pre-trained <code>.ply</code> Gaussian parameters from INRIA trainer</li>
-      <li>COLMAP camera-pose recovery (upstream of training)</li>
-      <li>Mip-NeRF 360 captured-photograph dataset</li>
-    </ul>
-  </div>
-  <div class="built">
-    <h4>Built from scratch (ours)</h4>
-    <ul>
-      <li>Binary <code>.ply</code> parser with sigmoid/exp activations</li>
-      <li>Frustum culling &amp; 3D&rarr;2D EWA covariance projection</li>
-      <li>Tile binning + bitonic depth sort (WebGPU / WGSL)</li>
-      <li>SH evaluation (up to degree 2) &amp; alpha compositing</li>
-      <li>CPU reference renderer, interactive camera, PSNR/SSIM tooling</li>
-    </ul>
-  </div>
-</div>
 
 <h2>What's Working So Far</h2>
 <ul>
