@@ -92,11 +92,11 @@ Track B is inspired by EPFL CVLab, which takes a simpler approach used by most w
 
 <h3>Deviations from the references</h3>
 <p>
-We replaced the paper's CUDA <code>cub::DeviceRadixSort</code> with a parallel bitonic sort. Spherical harmonics are evaluated to degree 3 using the canonical CUDA reference signs. Track A and Track B share identical EWA projection math and numerical guards (same 0.3·I covariance low pass floor, same near plane cull, same <code>1e-8</code> quaternion length floor) — so any visual divergence between them is localized to the composite stage, not projection. 
+We replaced the paper's CUDA <code>cub::DeviceRadixSort</code> with a parallel bitonic sort. Spherical harmonics are evaluated to degree 3 using the canonical CUDA reference signs. Track A and Track B share identical EWA projection math and numerical guards (same 0.3·I covariance low pass floor, same near plane cull, same <code>1e-8</code> quaternion length floor) so any visual divergence between them is localized to the composite stage, not projection. 
 </p>
 
 <h3>Problems Encountered</h3>
-<p><strong>Benchmark methodology mistake.</strong> Our first run showed a 12.7× Track A speedup on bicycle — so big we almost      
+<p><strong>Benchmark methodology mistake.</strong> Our first run showed a 12.7× Track A speedup on bicycle. This speedup was so big we almost      
   dismissed it. Turns out Track A has a fast path that reuses the last frame when the camera isn't moving, and our test left the    
   camera still. After adding moving camera benchmarks, the 12.7× held up (20.0 vs 1.57 FPS). The number was real; we'd gotten the
   right answer for the wrong reason.</p> 
@@ -109,7 +109,7 @@ We replaced the paper's CUDA <code>cub::DeviceRadixSort</code> with a parallel b
 <h3>Lessons Learned</h3>
 <p> The cache hit benchmark and a 0.08 dB SH3 disable test were both useful negative results. They taught us that measurement methodology is a first class deliverable and that intuition about which optimization will help is unreliable.</p>
 
-<p>A surprising chunk of our time went into stuff that isn't graphics at all — telemetry, benchmark scripts. All of it ended up being necessary. Per stage GPU timing is what caught the sort bottleneck. The moving camera bench   
+<p>A surprising chunk of our time went into stuff that isn't graphics at all: telemetry, benchmark scripts. All of it ended up being necessary. Per stage GPU timing is what caught the sort bottleneck. The moving camera bench   
   kept our speedup numbers honest.</p>
   
 <h2>Results</h2>
@@ -145,7 +145,7 @@ All numbers are measured in real Chrome on a MacBook Pro (Apple M-series, ~200 G
 </table>
 
 <p>
-Track B is faster on small scenes (≤281K Gaussians) where its lower overhead wins; Track A is dramatically faster on large scenes where its per tile binning evades the global sort. On bicycle and garden, Track A delivers 12.7× and 12.4× speedups — empirical confirmation that the Kerbl paper's tile based design is the right architecture at this scale, even through our WebGPU implementation.
+Track B is faster on small scenes (≤281K Gaussians) where its lower overhead wins; Track A is dramatically faster on large scenes where its per tile binning evades the global sort. On bicycle and garden, Track A delivers 12.7× and 12.4× speedups, empirical confirmation that the Kerbl paper's tile based design is the right architecture at this scale, even through our WebGPU implementation.
 </p>
 
 <h2>References</h2>
@@ -162,15 +162,15 @@ Track B is faster on small scenes (≤281K Gaussians) where its lower overhead w
 
 <h2>Contributions from each team member</h2>
 <p>
-  Kaan Kont — Authored the Track A tile pipeline (eight pass compute pipeline with bitonic sort and per pixel front to back composite). Built the benchmark harness. 
+  Kaan Kont: Authored the Track A tile pipeline (eight pass compute pipeline with bitonic sort and per pixel front to back composite). Built the benchmark harness. 
 </p>
 
 <p>
-  Ben Shamloufard — Authored the Track B pipeline (vertex shader projection, global sort, hardware alpha blend). Built the CPU reference renderer and the .ply / .splat parsers.
+  Ben Shamloufard: Authored the Track B pipeline (vertex shader projection, global sort, hardware alpha blend). Built the CPU reference renderer and the .ply / .splat parsers.
 </p>
 
 <p>
-  Alex Zhu — Authored spherical harmonics evaluation used by both tracks, camera controls (orbit, WASD, pan), and the HTML viewer with the seven mode visualization switcher and live telemetry overlay.
+  Alex Zhu: Authored spherical harmonics evaluation used by both tracks, camera controls (orbit, WASD, pan), and the HTML viewer with the seven mode visualization switcher and live telemetry overlay.
 </p>
 
 </body>
