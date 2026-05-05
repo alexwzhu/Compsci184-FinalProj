@@ -64,11 +64,14 @@ table td.num, table th.num { text-align: right; font-variant-numeric: tabular-nu
 <p>
 3D Gaussian Splatting (Kerbl et al., SIGGRAPH 2023) represents a 3D scene as millions of Gaussians with view-dependent color, and renders them in real time by projecting each one to screen and blending them front-to-back. The paper's reference renderer runs in CUDA, and its design takes advantage of CUDA-only features: a fast atomics-based radix sort, custom rasterizer kernels, and effectively unlimited GPU memory. We built a WebGPU implementation from scratch over four weeks, using two different methods. Track A is our implementation of the paper's tile pipeline, built using WebGPU which lacks a built-in radix sort and has weak support for atomics. Track B is an alternative inspired by EPFL CVLab's WebGPU port: it skips the tiling and lets the GPU's hardware alpha blender do the compositing. Comparing them validates the Kerbl paper's design empirically: on the 6 million Gaussian Mip-NeRF 360 scenes, Track A is 12.7× faster than Track B (20 vs 1.6 FPS at 1080p), because Track A's per-tile sorting evades the global-sort bottleneck that dominates Track B at scale. On smaller scenes, Track B is the faster pipeline because its overhead is lower. We also discovered a Track A specific streak artifact on <code>.splat</code> inputs that does not appear on <code>.ply</code> inputs — something the original paper does not address. A WGSL radix sort is a possible next optimization to close the remaining gap to Kerbl's reported real-time numbers.
 </p>
-
-<video width="426" height="240" controls>
+<figure>
+  <video width="426" height="240" controls>
   <source src="cs184-gif.mp4" type="video/mp4">
   Your browser does not support the video tag.
-</video>
+  </video>
+  <figcaption>The above clip shows some intermediary and final renderings in our pipeline.</figcaption>
+</figure>
+
 
 <h2>Technical Approach</h2>
 
