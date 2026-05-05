@@ -141,25 +141,17 @@ All numbers are measured in real Chrome on a MacBook Pro (Apple M-series, ~200 G
     <tr><th>Scene</th><th class="num">N (Gaussians)</th><th class="num">Track A FPS</th><th class="num">Track B FPS</th><th>Bottleneck</th></tr>
   </thead>
   <tbody>
-    <tr><td>luigi</td><td class="num">14K</td><td class="num">98.7</td><td class="num">173</td><td>v-sync (A); none (B)</td></tr>
-    <tr><td>nike</td><td class="num">270K</td><td class="num">~12*</td><td class="num">278</td><td>queue saturation (A); none (B)</td></tr>
-    <tr><td>plush</td><td class="num">281K</td><td class="num">~7</td><td class="num">192</td><td>composite (A); none (B)</td></tr>
-    <tr><td>room</td><td class="num">1.6M</td><td class="num">21.1</td><td class="num">6.4</td><td>composite (A); global sort (B)</td></tr>
-    <tr><td>bicycle</td><td class="num">6.13M</td><td class="num"><strong>20.0</strong></td><td class="num">1.6</td><td>composite (A); global sort (B)</td></tr>
-    <tr><td>garden</td><td class="num">5.83M</td><td class="num"><strong>21.0</strong></td><td class="num">1.7</td><td>composite (A); global sort (B)</td></tr>
+    <tr><td>luigi</td><td class="num">14K</td><td class="num">98.7</td><td class="num">173</td></tr>
+    <tr><td>nike</td><td class="num">270K</td><td class="num">~12*</td><td class="num">278</td></tr>
+    <tr><td>plush</td><td class="num">281K</td><td class="num">~7</td><td class="num">192</td></tr>
+    <tr><td>room</td><td class="num">1.6M</td><td class="num">21.1</td><td class="num">6.4</td></tr>
+    <tr><td>bicycle</td><td class="num">6.13M</td><td class="num"><strong>20.0</strong></td><td class="num">1.6</td></tr>
+    <tr><td>garden</td><td class="num">5.83M</td><td class="num"><strong>21.0</strong></td><td class="num">1.7</td></tr>
   </tbody>
 </table>
 
 <p>
 Track B is faster on small scenes (≤281K Gaussians) where its lower overhead wins; Track A is dramatically faster on large scenes where its per-tile binning evades the global sort. On bicycle and garden, Track A delivers 12.7× and 12.4× speedups — empirical confirmation that the Kerbl paper's tile-based design is the right architecture at this scale, even through our WebGPU implementation.
-</p>
-
-<p>
-Track B's bottleneck on large scenes is the global bitonic sort. With ~16M sort entries and ~300 sort passes (bitonic is O(N log²N)), each reading and writing the full ~128 MB sort buffer, total per-frame memory traffic is roughly 76 GB. At ~200 GB/s consumer memory bandwidth this gives a theoretical floor of ~380 ms per frame, or ~2.6 FPS — consistent with Track B's measured 1.6–1.7 FPS on bicycle/garden. Track A evades this ceiling because each tile's local Gaussian list is much smaller than the global Gaussian count, and the early termination at <code>T &lt; 1/4096</code> means most pixels stop accumulating well before exhausting their tile. A WGSL radix sort (the same algorithm INRIA's CUDA implementation uses) is the obvious next step toward closing the remaining gap to the paper's 100+ FPS results on equivalent NVIDIA hardware.
-</p>
-
-<p style="font-size: 10pt; color: #555;">
-* Nike Track A queue saturation produces a sawtooth FPS pattern as WebGPU's submit queue backpressures on a frame-budget-exceeding pipeline.
 </p>
 
 <h2>References</h2>
