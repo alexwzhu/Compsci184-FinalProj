@@ -169,15 +169,15 @@ Track B is faster on small scenes (≤281K Gaussians) where its lower overhead w
 
 <h2>Contributions from each team member</h2>
 <p>
-<strong>Kaan Kont</strong> &mdash; GPU pipeline and Track A. Authored Track A (the eight-pass tile pipeline including <code>projectTile</code>, prefix sum, key duplication, bitonic sort over composite keys, tile range computation, and the per-pixel front-to-back composite shader), the INRIA <code>cameras.json</code> loader and pose-convention fix, the benchmark/capture harness with moving-camera and cache-disable support, the PSNR/SSIM Python comparator, and the per-stage GPU telemetry. Diagnosed the cache-hit benchmark methodology error and the INRIA pose-convention bugs. Wrote the report.
+  Kaan Kont — Authored the Track A tile pipeline (eight-pass compute pipeline with bitonic sort and per-pixel front-to-back composite). Built the benchmark harness. 
 </p>
 
 <p>
-<strong>Ben Shamloufard</strong> &mdash; <span class="todo">[Ben to fill in: specific Track B components owned (vertex/fragment shaders, render dispatcher), CPU reference renderer, .ply / .splat parsers as applicable, scene loading and management, any debugging or perf work owned. Aim for ~3–5 sentences naming specific files/components.]</span>
+  Ben Shamloufard — Authored the Track B pipeline (vertex-shader projection, global sort, hardware alpha blend). Built the CPU reference renderer and the .ply / .splat parsers.
 </p>
 
 <p>
-<strong>Alex Zhu</strong> &mdash; <span class="todo">[Alex to fill in: spherical harmonics evaluation (degree 0/2/3 in WGSL), camera controls (orbit, WASD, pan), HTML viewer / UI / visualization mode switching, any debugging or feature work owned. Aim for ~3–5 sentences naming specific files/components.]</span>
+  Alex Zhu — Authored spherical harmonics evaluation used by both tracks, camera controls (orbit, WASD, pan), and the HTML viewer with the seven-mode visualization switcher and live telemetry overlay.
 </p>
 
 </body>
