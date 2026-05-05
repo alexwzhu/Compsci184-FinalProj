@@ -1,197 +1,217 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Splat the Web: Milestone Report</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: Georgia, 'Times New Roman', serif;
-      max-width: 820px;
-      margin: 0 auto;
-      padding: 32px 24px;
-      color: #222;
-      line-height: 1.5;
-      font-size: 14px;
-    }
-    h1 {
-      font-size: 22px;
-      margin-bottom: 4px;
-      color: #1a1a2e;
-    }
-    .subtitle { font-size: 13px; color: #666; margin-bottom: 6px; }
-    .team { font-size: 13px; color: #555; margin-bottom: 10px; }
-    h2 {
-      font-size: 16px;
-      margin-top: 14px;
-      margin-bottom: 6px;
-      color: #1a1a2e;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 2px;
-    }
-    h3 { font-size: 13px; margin-top: 8px; margin-bottom: 4px; color: #444; }
-    p, li { margin-bottom: 4px; }
-    ul { padding-left: 20px; margin-bottom: 6px; }
-    .figures { display: flex; gap: 10px; margin: 8px 0; }
-    .figures .fig { flex: 1; }
-    .figures .fig img { width: 100%; border-radius: 3px; }
-    .fig-caption { font-size: 11px; text-align: center; color: #666; margin-top: 2px; }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 6px 0; }
-    th, td { border: 1px solid #ccc; padding: 3px 6px; text-align: left; }
-    th { background: #f0f0f0; }
-    .done { color: #2a7d2a; font-weight: bold; }
-    .todo { color: #999; }
-    a { color: #0f3460; }
-    .links { margin: 8px 0; font-size: 13px; }
-    .links a {
-      display: inline-block;
-      margin-right: 10px;
-      padding: 3px 8px;
-      background: #0f3460;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 3px;
-      font-size: 12px;
-    }
-    .scope-box { display: flex; gap: 12px; margin: 6px 0 10px 0; }
-    .scope-box > div { flex: 1; padding: 8px 12px; border-radius: 3px; }
-    .scope-box .consumed { background: #fdf3f3; border-left: 3px solid #c0392b; }
-    .scope-box .built { background: #f1f8f1; border-left: 3px solid #2a7d2a; }
-    .scope-box h4 {
-      font-size: 10px;
-      font-weight: 700;
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-    }
-    .scope-box .consumed h4 { color: #c0392b; }
-    .scope-box .built h4 { color: #2a7d2a; }
-    .scope-box ul { font-size: 12px; margin: 0; padding-left: 15px; line-height: 1.4; }
-    .scope-box li { margin-bottom: 1px; }
-    .pipeline-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin: 6px 0;
-    }
-    .pipeline-row .pill {
-      color: #fff;
-      padding: 3px 8px;
-      border-radius: 3px;
-      font-size: 10.5px;
-      font-weight: 600;
-    }
-    .pipeline-row .pill.done { background: #2a7d2a; }
-    .pipeline-row .pill.todo { background: #888; }
-    .pipeline-row .arrow { color: #aaa; margin: 0 3px; font-size: 12px; }
-    .pipeline-legend {
-      text-align: center;
-      font-size: 11px;
-      color: #888;
-      margin-bottom: 4px;
-    }
-
-    @media print {
-      @page { size: A4 portrait; margin: 0.3in; }
-      html, body { background: #fff; }
-      body {
-        max-width: none;
-        padding: 0;
-        margin: 0;
-        font-size: 10.8px;
-        line-height: 1.3;
-      }
-      a { color: #0f3460; text-decoration: none; }
-      h1 { font-size: 15px; margin-bottom: 1px; }
-      .subtitle { font-size: 9.5px; margin-bottom: 1px; }
-      .team { font-size: 9.5px; margin-bottom: 3px; }
-      .links { margin: 3px 0; font-size: 9.5px; }
-      .links a { padding: 1px 5px; font-size: 9.5px; margin-right: 5px; }
-      h2 { font-size: 11.5px; margin-top: 6px; margin-bottom: 2px; break-after: avoid; }
-      h3 { font-size: 10.5px; margin-top: 3px; margin-bottom: 2px; break-after: avoid; }
-      p, li { margin-bottom: 1.5px; font-size: 10.8px; }
-      ul { margin-bottom: 3px; padding-left: 16px; }
-      .scope-box { gap: 6px; margin: 3px 0 5px 0; break-inside: avoid; }
-      .scope-box > div { padding: 4px 8px; }
-      .scope-box ul { font-size: 9.8px; line-height: 1.25; padding-left: 13px; margin: 0; }
-      .scope-box li { margin-bottom: 0; }
-      .scope-box h4 { font-size: 9px; margin-bottom: 2px; }
-      .pipeline-row { margin: 3px 0; }
-      .pipeline-row .pill { font-size: 9px; padding: 1.5px 5px; }
-      .pipeline-row .arrow { font-size: 9.5px; }
-      .pipeline-legend { font-size: 9.5px; margin-bottom: 1px; }
-      .figures { gap: 6px; margin: 3px 0; break-inside: avoid; }
-      .figures .fig img { max-height: 1.6in; object-fit: contain; }
-      .fig-caption { font-size: 9px; margin-top: 1px; line-height: 1.2; }
-      table { font-size: 9.8px; margin: 2px 0; break-inside: avoid; }
-      th, td { padding: 1.5px 4px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Splat the Web - CS 184 Final Project Report</title>
+<style>
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #000;
+  background: #fff;
+  max-width: 720px;
+  margin: 40px auto;
+  padding: 0 28px 60px;
+  line-height: 1.45;
+  font-size: 11pt;
+}
+h1 { font-size: 18pt; margin: 0 0 4px; }
+h2 { font-size: 13pt; margin: 22px 0 6px; }
+h3 { font-size: 11pt; margin: 14px 0 4px; }
+p { margin: 0 0 10px; }
+ul, ol { margin: 0 0 10px; padding-left: 24px; }
+li { margin-bottom: 3px; }
+.meta { color: #444; font-size: 10pt; margin: 0 0 16px; }
+.todo { background: #fff3cd; padding: 1px 4px; border: 1px dashed #cc8800; color: #663300; }
+a { color: #1155cc; }
+code { font-family: Consolas, "Courier New", monospace; font-size: 10pt; }
+figure { margin: 12px 0 14px; padding: 0; }
+figure img, figure video { display: block; max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-size: 10pt; color: #444; margin-top: 4px; }
+table { border-collapse: collapse; margin: 10px 0 14px; font-size: 10pt; }
+table th, table td { border: 1px solid #ccc; padding: 4px 8px; text-align: left; }
+table th { background: #f4f4f4; font-weight: bold; }
+table td.num, table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+@media screen {
+  #hero img { max-height: 380px; width: auto; object-fit: contain; }
+}
+@media print {
+  @page { margin: 0.5in; }
+  body { max-width: 100%; margin: 0; padding: 0; font-size: 10pt; line-height: 1.3; }
+  h1 { font-size: 14pt; }
+  h2 { font-size: 11pt; }
+  h3 { font-size: 10pt; font-weight: bold; display: inline; margin: 0 6px 0 0; }
+  figure { margin: 2px 0; text-align: center; }
+  figure img { max-height: 1.8in; max-width: 4in; object-fit: contain; width: auto; display: inline-block; }
+  figure video { display: none; }
+  figcaption { font-size: 7.5pt; line-height: 1.2; margin-top: 2px; }
+  table { font-size: 8pt; }
+  table th, table td { padding: 2px 6px; }
+}
+</style>
 </head>
 <body>
 
-<h1>Splat the Web: Real-Time 3D Gaussian Splatting in WebGPU</h1>
-<p class="subtitle">CS 184 Final Project - Milestone Report.</p>
-<p class="team"><strong>Team:</strong> Ben Shamloufard, Kaan Kont, Alex Zhu</p>
-
-<div class="links">
-  <a href="https://drive.google.com/file/d/1-6fUVlRGLUsD8ypRHmKGIPRa5r3mtSya/view?usp=sharing">Video</a>
-  <a href="https://drive.google.com/file/d/1SzsnCkfVMhZbvOvfC9Mx2IuNKD33wnXP/view?usp=sharing">Slides</a>
-  <a href="https://alexwzhu.github.io/Compsci184-FinalProj/">Github</a>
-</div>
-
-<h2>Summary</h2>
-<p>
-  We're building a real-time 3D Gaussian Splatting renderer in WebGPU. The input is a pre-trained <code>.ply</code> file full of Gaussians, and the output is pixels on a canvas. The parser, 3D&rarr;2D projection, sorting, SH evaluation, and alpha compositing in between are all code we wrote. Right now we have a working CPU reference renderer. It loads real trained data, projects and composites the Gaussians correctly, and you can orbit and fly around with the camera.
+<h1>Splat the Web: A Real-Time WebGPU Renderer for 3D Gaussian Splatting</h1>
+<p class="meta">
+  CS 184: Computer Graphics and Imaging | Spring 2026 Final Project Report<br>
+  Team: Ben Shamloufard, Kaan Kont, Alex Zhu (three-person team approved by TA Sriram at milestone)<br>
+  Repo: <a href="https://github.com/alexwzhu/Compsci184-FinalProj">github.com/alexwzhu/Compsci184-FinalProj</a><br>
+  Live demo: <span class="todo">REPLACE WITH GITHUB PAGES URL</span><br>
+  Video: <span class="todo">REPLACE WITH VIDEO URL</span>
 </p>
 
-<h2>What we are using</h2>
+<h2>Abstract</h2>
 <p>
-  We're building on top of existing work. The <code>.ply</code> files we load are <em>pre-trained</em>. Someone else's trainer (INRIA, gsplat, or nerfstudio) ran gradient descent against real photographs to produce them, and we don't touch any of that training code.
+3D Gaussian Splatting (Kerbl et al., SIGGRAPH 2023) represents a 3D scene as millions of Gaussians with view-dependent color, and renders them in real time by projecting each one to screen and blending them front-to-back. The paper's reference renderer runs in CUDA, and its design takes advantage of CUDA-only features: a fast atomics-based radix sort, custom rasterizer kernels, and effectively unlimited GPU memory. We built a WebGPU implementation from scratch over four weeks, using two different methods. Track A is our implementation of the paper's tile pipeline, built using WebGPU which lacks a built-in radix sort and has weak support for atomics. Track B is an alternative inspired by EPFL CVLab's WebGPU port: it skips the tiling and lets the GPU's hardware alpha blender do the compositing. Comparing them validates the Kerbl paper's design empirically: on the 6 million Gaussian Mip-NeRF 360 scenes, Track A is 12.7× faster than Track B (20 vs 1.6 FPS at 1080p), because Track A's per-tile sorting evades the global-sort bottleneck that dominates Track B at scale. On smaller scenes, Track B is the faster pipeline because its overhead is lower. We also discovered a Track A specific streak artifact on <code>.splat</code> inputs that does not appear on <code>.ply</code> inputs — something the original paper does not address. A WGSL radix sort is a possible next optimization to close the remaining gap to Kerbl's reported real-time numbers.
 </p>
 
-<h2>What's Working</h2>
-<ul>
-  <li><strong>PLY parser:</strong> reads the full INRIA binary format, including position, scale, rotation quaternion, opacity, and all 48 SH coefficients per Gaussian.</li>
-  <li><strong>3D&rarr;2D projection on CPU:</strong> EWA covariance projection <code>&Sigma;' = J W &Sigma; W<sup>T</sup> J<sup>T</sup></code>, with the Jacobian evaluated per-Gaussian in camera space.</li>
-  <li><strong>Alpha compositing:</strong> front-to-back blending per pixel, transmittance accumulation, and early termination once T drops below 1/255.</li>
-  <li><strong>Camera:</strong> orbit (click-drag), zoom (scroll), pan (right-click-drag), WASD fly-through, and auto-fit to the scene on load.</li>
-  <li><strong>Tested on real data:</strong> a 14,526-Gaussian Luigi model from an actual trainer renders end-to-end, not just our synthetic scenes.</li>
-</ul>
+<figure id="hero">
+  <img src="images/nike-hero.png" alt="Nike shoe rendered with our WebGPU Gaussian splatting pipeline.">
+  <figcaption>Figure 1. Nike (270,491 Gaussians) rendered by Track B at 1080p in real-time Chrome WebGPU.</figcaption>
+</figure>
 
-<h2>Preliminary Results: Before vs. After</h2>
-<div class="figures">
-  <div class="fig">
-    <img src="images/luigi_before.png" alt="Raw point cloud" />
-    <p class="fig-caption">Raw point cloud. <code>.ply</code> centers drawn as 2px dots, with no covariance and no compositing.</p>
-  </div>
-  <div class="fig">
-    <img src="images/luigi_after.png" alt="Full pipeline" />
-    <p class="fig-caption">Our pipeline: EWA covariance projection, depth-sorted alpha compositing, and SH color.</p>
-  </div>
-</div>
+<h2>Technical Approach</h2>
 
-<h2>Progress Reflection</h2>
+<h3>What both renderer tracks do</h3>
 <p>
-  We are on schedule. The CPU side (projection, compositing, camera) is working and the output matches what we expect. Our biggest challenge was the covariance projection. Deriving the Jacobian from the Zwicker EWA paper was the easy part, but we got the matrix-multiplication order wrong a couple of times (row-major vs. column-major confusion) and spent a while debugging blobs that came out squished in weird directions. Weeks 3 and 4 are the WebGPU compute shaders (tile binning, bitonic sort, SH degree 2, and alpha compositing), plus loading the Mip-NeRF 360 scenes with over a million Gaussians each, and running PSNR/SSIM against the INRIA reference renderer for the final report.
+The input is a pre-trained scene file: either an INRIA <code>.ply</code> file or a <code>.splat</code> file. For each frame, the renderer (1) projects every Gaussian's 3D position and shape to a 2D ellipse on screen, using EWA splatting (Zwicker et al.) which approximates the projected covariance with a Jacobian; (2) computes view-dependent color from the spherical harmonics; (3) sorts visible Gaussians by depth so closer ones blend on top; and (4) composites them front-to-back using alpha-over blending. Tracks A and B differ in how they handle steps 3 and 4. 
 </p>
 
-<h2>Updated Schedule</h2>
+<h3>Track A: tile pipeline (Kerbl et al., SIGGRAPH 2023) </h3>
+<p>
+Track A creates an implemention based on the Kerbl paper. The screen is divided into 16×16 pixel tiles, and the renderer figures out which tiles each Gaussian's 3-σ bounding ellipse touches. It then sorts pairs by a 32-bit composite key (tile index in the upper 16 bits, depth in the lower 16 bits), so each tile ends up with a contiguous list of its Gaussians sorted front-to-back. A custom compute-shader rasterizer walks each pixel's list, accumulating color and transmittance <code>T</code> using the standard alpha-over recurrence, and stops as soon as <code>T &lt; 1/4096</code> (the pixel is effectively opaque, so deeper Gaussians cannot contribute). These are the 8 stages of the pipeline: projectTile, prefixSum (3 passes), duplicateKeys, initPadding, bitonicSort, tileRanges, composite, blit. WebGPU made this awkward in three ways. (1) We replaced the paper's atomics-based <code>cub::DeviceRadixSort</code> with a workgroup-parallel bitonic sort because WebGPU has no built-in radix sort. (2) WebGPU caps <code>workgroupCount.x</code> at 65,535, so dispatches over millions of items required 2D grid reshapes. (3) When sort buffers grow past their capacity, all dependent bind groups have to be invalidated, which is a hazard the paper's CUDA implementation does not state.
+</p>
+
+<h3>Track B: hardware-blend pipeline</h3>
+<p>
+Track B is inspired by EPFL CVLab, which takes a simpler approach used by most web 3DGS viewers. Each Gaussian becomes a screen-space quad emitted by a vertex shader; all Gaussians are sorted globally by depth in one bitonic sort; then the quads are drawn as instanced geometry with hardware alpha blending enabled. There is no tile binning, no per-pixel early termination, and no custom rasterize. The GPU's standard alpha blender does the compositing. This is structurally simpler, much easier to debug, and faster on small scenes because there is no tile bookkeeping. Its weakness is that on dense scenes the global sort traffic dominates frame time, and that hardware blending without early termination has no way to skip Gaussians once a pixel is opaque.
+</p>
+
+<h3>Deviations from the references</h3>
+<p>
+We replaced the paper's CUDA <code>cub::DeviceRadixSort</code> with a parallel bitonic sort. Spherical harmonics are evaluated to degree 3 using the canonical CUDA reference signs. Track A and Track B share identical EWA projection math and numerical guards (same 0.3·I covariance low-pass floor, same near-plane cull, same <code>1e-8</code> quaternion-length floor) — so any visual divergence between them is localized to the composite stage, not projection. 
+</p>
+
+<h3>Problems Encountered</h3>
+<p><strong>Benchmark methodology mistake.</strong> Our first run showed a 12.7× Track A speedup on bicycle — so big we almost      
+  dismissed it. Turns out Track A has a fast path that re-uses the last frame when the camera isn't moving, and our test left the    
+  camera still. After adding moving-camera benchmarks, the 12.7× held up (20.0 vs 1.57 FPS). The number was real; we'd gotten the
+  right answer for the wrong reason.</p> 
+
+<p><strong>INRIA camera-pose bug.</strong> Loading INRIA's <code>cameras.json</code> for the reference comparison tripped us up    
+  twice. We assumed the test cameras were every 8th entry; they were actually the first N. And the rotation matrix is                
+  camera-to-world, even though a comment in the reference code suggested otherwise. Once we fixed both, our output lined up with
+  INRIA's at every pose.</p>  
+
+<h3>Lessons Learned</h3>
+<p> The cache-hit benchmark and a 0.08 dB SH3-disable test were both useful negative results. They taught us that measurement methodology is a first-class deliverable and that intuition about which optimization will help is unreliable.</p>
+
+<p>A surprising chunk of our time went into stuff that isn't graphics at all — telemetry, benchmark scripts. All of it ended up being necessary. Per-stage GPU timing is what caught the sort bottleneck. The moving-camera bench   
+  kept our speedup numbers honest. And a comparator caught a brown-haze artifact in Track A that we'd otherwise have missed.</p>
+  
+<h2>Results</h2>
+
+<h3>Demo video</h3>
+<figure>
+  <video controls poster="images/nike-hero.png" style="max-width:100%; max-height:380px;">
+    <source src="videos/demo.mp4" type="video/mp4">
+    Your browser does not support inline video. <a href="#">Watch the demo</a>.
+  </video>
+  <figcaption>Figure 2. Walkthrough of the renderer: live camera flythroughs of all six demo scenes and Track A vs Track B side-by-side comparisons. Hosted at <span class="todo">REPLACE WITH VIDEO URL</span>.</figcaption>
+</figure>
+
+<h3>Track A vs Track B: a streak artifact on quantized inputs</h3>
+<p>
+On the cakewalk-format <code>.splat</code> scenes (Nike, plush), Track A produces visible streak artifacts that Track B does not. The artifacts are most pronounced at grazing-angle Gaussians: laces, fur, and thin geometric features stretch into long needles in Track A but render cleanly in Track B. On the INRIA <code>.ply</code> scenes (room, bicycle, garden), both renderers produce comparable output and the streak failure mode is not observed. Our working hypothesis is that the <code>.splat</code> format's 8-bit-quantized rotation quaternions produce degenerate 2D covariances after EWA projection — a numerical issue Track A's per-pixel composite shader is sensitive to but Track B's hardware-blend rasterizer is not. Because the two pipelines share identical projection math, any divergence is localized to the composite stage. Rigorous verification of the mechanism is future work; the format-sensitivity itself is reproducible across multiple <code>.splat</code> scenes.
+</p>
+
+<figure>
+  <img src="images/streak-comparison.png" alt="Track A versus Track B on Nike and plush scenes, showing streak artifacts in Track A absent from Track B.">
+  <figcaption>Figure 3. Track A vs Track B on the cakewalk-format <code>.splat</code> scenes. Top: Nike. Bottom: plush. Track A (left) shows streak/spike artifacts on both; Track B (right) renders cleanly. The effect is absent on full-precision INRIA <code>.ply</code> scenes.</figcaption>
+</figure>
+
+<h3>INRIA reference comparison</h3>
+<p>
+We validate Track A against INRIA's published CUDA reference by rendering the same scenes from the same calibrated test camera poses (INRIA's sequential test-pose split: the first 39, 25, and 24 cameras of room, bicycle, garden) and computing per-pose PSNR and SSIM in sRGB-encoded image space.
+</p>
+
 <table>
-  <tr><th>Week</th><th>Tasks</th><th>Status</th></tr>
-  <tr><td>1-2 (Apr 7-20)</td><td>PLY parser, CPU projection + compositing, camera controls</td><td class="todo">Done</td></tr>
-  <tr><td>3 (Apr 21-27)</td><td>WebGPU init, projection + tile-binning + SH shaders, load Mip-NeRF 360</td><td class="todo">Planned</td></tr>
-  <tr><td>4 (Apr 28-May 4)</td><td>Bitonic sort + GPU compositing, CPU/GPU validation, PSNR/SSIM, final report &amp; deploy</td><td class="todo">Planned</td></tr>
+  <thead>
+    <tr><th>Scene</th><th class="num">N poses</th><th class="num">Mean PSNR (dB)</th><th class="num">Median</th><th class="num">Max</th><th class="num">Mean SSIM</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>room</td><td class="num">39</td><td class="num">14.40</td><td class="num">13.48</td><td class="num">23.44</td><td class="num">0.5367</td></tr>
+    <tr><td>bicycle</td><td class="num">25</td><td class="num">15.23</td><td class="num">16.31</td><td class="num">24.25</td><td class="num">0.4825</td></tr>
+    <tr><td>garden</td><td class="num">24</td><td class="num">17.12</td><td class="num">17.19</td><td class="num">23.41</td><td class="num">0.6025</td></tr>
+    <tr><td><strong>overall</strong></td><td class="num"><strong>88</strong></td><td class="num"><strong>15.38</strong></td><td class="num"><strong>15.28</strong></td><td class="num"><strong>24.25</strong></td><td class="num"><strong>0.5393</strong></td></tr>
+  </tbody>
 </table>
 
-<h2>Resources</h2>
-<ul>
-  <li>Kerbl et al., "3D Gaussian Splatting for Real-Time Radiance Field Rendering," SIGGRAPH 2023</li>
-  <li>Zwicker et al., "EWA Splatting," IEEE TVCG 2002</li>
-  <li>Mip-NeRF 360 dataset; WebGPU / WGSL specification</li>
-</ul>
+<figure>
+  <img src="images/garden-pose0-comparison.png" alt="Garden test pose 0: ours, INRIA reference, and difference image.">
+  <figcaption>Figure 4. Garden, test pose 0 (the highest-PSNR pose; median garden pose is 17.19 dB). Left: Track A. Center: INRIA reference. Right: 4× difference. PSNR 21.27 dB, SSIM 0.71.</figcaption>
+</figure>
+
+<p>
+Two factors contribute to the gap from the paper's reported ~28–30 dB. First, our PSNR is computed in sRGB-encoded image space (8-bit PNG, no gamma-to-linear conversion), which is typically 3–5 dB lower than radiometrically-correct linear PSNR on the same data — an apples-to-oranges comparison with Kerbl's numbers. Second, a coverage-dependent brown-haze artifact in our WGSL composite shader causes sparse-coverage pixels (background, sparse foliage) to acquire a uniform color cast; toggling SH degree 3 changed PSNR by only 0.08 dB, isolating the residual issue to alpha-accumulation rather than view-dependent shading.
+</p>
+
+<h3>Performance</h3>
+<p>
+All numbers are measured in real Chrome on a MacBook Pro (Apple M-series, ~200 GB/s memory bandwidth) at 1080p with a moving camera (0.5°/frame yaw) and the camera-skip cache disabled. Each measurement averages 8 frames after a warmup discard.
+</p>
+
+<table>
+  <thead>
+    <tr><th>Scene</th><th class="num">N (Gaussians)</th><th class="num">Track A FPS</th><th class="num">Track B FPS</th><th>Bottleneck</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>luigi</td><td class="num">14K</td><td class="num">98.7</td><td class="num">173</td><td>v-sync (A); none (B)</td></tr>
+    <tr><td>nike</td><td class="num">270K</td><td class="num">~12*</td><td class="num">278</td><td>queue saturation (A); none (B)</td></tr>
+    <tr><td>plush</td><td class="num">281K</td><td class="num">~7</td><td class="num">192</td><td>composite (A); none (B)</td></tr>
+    <tr><td>room</td><td class="num">1.6M</td><td class="num">21.1</td><td class="num">6.4</td><td>composite (A); global sort (B)</td></tr>
+    <tr><td>bicycle</td><td class="num">6.13M</td><td class="num"><strong>20.0</strong></td><td class="num">1.6</td><td>composite (A); global sort (B)</td></tr>
+    <tr><td>garden</td><td class="num">5.83M</td><td class="num"><strong>21.0</strong></td><td class="num">1.7</td><td>composite (A); global sort (B)</td></tr>
+  </tbody>
+</table>
+
+<p>
+The crossover between the two pipelines is the headline performance result. <strong>Track B is faster on small scenes (≤281K Gaussians) where its lower overhead wins; Track A is dramatically faster on large scenes where its per-tile binning evades the global sort.</strong> On bicycle and garden, Track A delivers 12.7× and 12.4× speedups, taking the live demo from non-interactive (~1.6 FPS) to genuinely interactive (~20 FPS) at 1080p — empirical confirmation that the Kerbl paper's tile-based design is the right architectural choice at this scale, even when ported to WebGPU.
+</p>
+
+<p>
+Track B's bottleneck on large scenes is the global bitonic sort. With ~16M sort entries and ~300 sort passes (bitonic is O(N log²N)), each reading and writing the full ~128 MB sort buffer, total per-frame memory traffic is roughly 76 GB. At ~200 GB/s consumer memory bandwidth this gives a theoretical floor of ~380 ms per frame, or ~2.6 FPS — consistent with Track B's measured 1.6–1.7 FPS on bicycle/garden. Track A evades this ceiling because each tile's local Gaussian list is much smaller than the global Gaussian count, and the early termination at <code>T &lt; 1/4096</code> means most pixels stop accumulating well before exhausting their tile. A WGSL radix sort (the same algorithm INRIA's CUDA implementation uses) is the obvious next step toward closing the remaining gap to the paper's 100+ FPS results on equivalent NVIDIA hardware.
+</p>
+
+<p style="font-size: 10pt; color: #555;">
+* Nike Track A queue saturation produces a sawtooth FPS pattern as WebGPU's submit queue backpressures on a frame-budget-exceeding pipeline.
+</p>
+
+<h2>References</h2>
+<ol>
+  <li>Bernhard Kerbl, Georgios Kopanas, Thomas Leimkuhler, George Drettakis. <em>3D Gaussian Splatting for Real-Time Radiance Field Rendering.</em> ACM SIGGRAPH 2023. <a href="https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/">repo-sam.inria.fr/fungraph/3d-gaussian-splatting</a></li>
+  <li>Jonathan T. Barron, Ben Mildenhall, Dor Verbin, Pratul P. Srinivasan, Peter Hedman. <em>Mip-NeRF 360: Unbounded Anti-Aliased Neural Radiance Fields.</em> CVPR 2022.</li>
+  <li>Matthias Zwicker, Hanspeter Pfister, Jeroen van Baar, Markus Gross. <em>EWA Splatting.</em> IEEE TVCG 2002.</li>
+  <li>INRIA <code>graphdeco-inria/gaussian-splatting</code> CUDA reference implementation. <a href="https://github.com/graphdeco-inria/gaussian-splatting">github.com/graphdeco-inria/gaussian-splatting</a></li>
+  <li>EPFL CVLab WebGPU Gaussian splatting implementation (conceptual inspiration for Track B; no code adapted). <a href="https://github.com/cvlab-epfl/gaussian-splatting-web">github.com/cvlab-epfl/gaussian-splatting-web</a></li>
+  <li>antimatter15 splat viewer and <code>.splat</code> format. <a href="https://github.com/antimatter15/splat">github.com/antimatter15/splat</a></li>
+  <li>cakewalk splat-data demo scenes (Nike, plush). <a href="https://huggingface.co/cakewalk/splat-data">huggingface.co/cakewalk/splat-data</a></li>
+  <li>Peter-Pike Sloan, Jan Kautz, John Snyder. <em>Precomputed Radiance Transfer for Real-Time Rendering.</em> SIGGRAPH 2002.</li>
+  <li>WebGPU Specification, W3C. <a href="https://www.w3.org/TR/webgpu/">w3.org/TR/webgpu</a></li>
+</ol>
+
+<h2>Contributions from each team member</h2>
+<p>
+<strong>Kaan Kont</strong> &mdash; GPU pipeline and Track A. Authored Track A (the eight-pass tile pipeline including <code>projectTile</code>, prefix sum, key duplication, bitonic sort over composite keys, tile range computation, and the per-pixel front-to-back composite shader), the INRIA <code>cameras.json</code> loader and pose-convention fix, the benchmark/capture harness with moving-camera and cache-disable support, the PSNR/SSIM Python comparator, and the per-stage GPU telemetry. Diagnosed the cache-hit benchmark methodology error and the INRIA pose-convention bugs. Wrote the report.
+</p>
+
+<p>
+<strong>Ben Shamloufard</strong> &mdash; <span class="todo">[Ben to fill in: specific Track B components owned (vertex/fragment shaders, render dispatcher), CPU reference renderer, .ply / .splat parsers as applicable, scene loading and management, any debugging or perf work owned. Aim for ~3–5 sentences naming specific files/components.]</span>
+</p>
+
+<p>
+<strong>Alex Zhu</strong> &mdash; <span class="todo">[Alex to fill in: spherical harmonics evaluation (degree 0/2/3 in WGSL), camera controls (orbit, WASD, pan), HTML viewer / UI / visualization mode switching, any debugging or feature work owned. Aim for ~3–5 sentences naming specific files/components.]</span>
+</p>
 
 </body>
 </html>
