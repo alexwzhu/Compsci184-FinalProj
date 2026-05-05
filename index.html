@@ -62,7 +62,7 @@ table td.num, table th.num { text-align: right; font-variant-numeric: tabular-nu
 
 <h2>Abstract</h2>
 <p>
-3D Gaussian Splatting represents a 3D scene as millions of Gaussians with view-dependent color, and renders them in real time by projecting each one to screen and blending them front-to-back. This project builds on "3D Gaussian Splatting for Real-Time Radiance Field Rendering" (https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/) by Kerbl, Kopanas, Leimkühler, and Drettakis (SIGGRAPH). Their paper introduced a way to represent 3D scenes as millions of semi-transparent Gaussians and render them in real time on a GPU. The paper's reference renderer runs in CUDA, and its design takes advantage of CUDA-only features: a fast atomics-based radix sort, custom rasterizer kernels, and effectively unlimited GPU memory. We built a WebGPU implementation from scratch over four weeks, using two different methods. Track A is our implementation of the paper's tile pipeline, built using WebGPU which lacks a built-in radix sort and has weak support for atomics. Track B is an alternative inspired by EPFL CVLab's WebGPU port: it skips the tiling and lets the GPU's hardware alpha blender do the compositing. Comparing them validates the Kerbl paper's design empirically: on the 6 million Gaussian Mip-NeRF 360 scenes, Track A is 12.7× faster than Track B (20 vs 1.6 FPS at 1080p), because Track A's per-tile sorting evades the global-sort bottleneck that dominates Track B at scale. On smaller scenes, Track B is the faster pipeline because its overhead is lower. We also discovered a Track A specific streak artifact on <code>.splat</code> inputs that does not appear on <code>.ply</code> inputs — something the original paper does not address. A WGSL radix sort is a possible next optimization to close the remaining gap to Kerbl's reported real-time numbers.
+3D Gaussian Splatting represents a 3D scene as millions of Gaussians with view dependent color, and renders them in real time by projecting each one to screen and blending them front to back. This project builds on "3D Gaussian Splatting for Real-Time Radiance Field Rendering" (https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/) by Kerbl, Kopanas, Leimkühler, and Drettakis (SIGGRAPH). Their paper introduced a way to represent 3D scenes as millions of semi-transparent Gaussians and render them in real time on a GPU. The paper's reference renderer runs in CUDA, and its design takes advantage of CUDA only features: a fast atomics-based radix sort, custom rasterizer kernels, and effectively unlimited GPU memory. We built a WebGPU implementation from scratch over four weeks, using two different methods. Track A is our implementation of the paper's tile pipeline, built using WebGPU which lacks a built in radix sort and has weak support for atomics. Track B is an alternative inspired by EPFL CVLab's WebGPU port: it skips the tiling and lets the GPU's hardware alpha blender do the compositing. Comparing them validates the Kerbl paper's design empirically: on the 6 million Gaussian Mip-NeRF 360 scenes, Track A is 12.7× faster than Track B (20 vs 1.6 FPS at 1080p), because Track A's per tile sorting evades the global sort bottleneck that dominates Track B at scale. On smaller scenes, Track B is the faster pipeline because its overhead is lower. We also discovered a Track A specific streak artifact on <code>.splat</code> inputs that does not appear on <code>.ply</code> inputs — something the original paper does not address. A WGSL radix sort is a possible next optimization to close the remaining gap to Kerbl's reported real time numbers.
 </p>
 <figure>
   <video width="426" height="240" controls>
@@ -77,46 +77,46 @@ table td.num, table th.num { text-align: right; font-variant-numeric: tabular-nu
 
 <h3>What both renderer tracks do</h3>
 <p>
-The input is a pre-trained scene file: either an INRIA <code>.ply</code> file or a <code>.splat</code> file. For each frame, the renderer (1) projects every Gaussian's 3D position and shape to a 2D ellipse on screen, using EWA splatting (Zwicker et al.) which approximates the projected covariance with a Jacobian; (2) computes view-dependent color from the spherical harmonics; (3) sorts visible Gaussians by depth so closer ones blend on top; and (4) composites them front-to-back using alpha-over blending. Tracks A and B differ in how they handle steps 3 and 4. 
+The input is a pre trained scene file: either an INRIA <code>.ply</code> file or a <code>.splat</code> file. For each frame, the renderer (1) projects every Gaussian's 3D position and shape to a 2D ellipse on screen, using EWA splatting (Zwicker et al.) which approximates the projected covariance with a Jacobian; (2) computes view dependent color from the spherical harmonics; (3) sorts visible Gaussians by depth so closer ones blend on top; and (4) composites them front to back using alpha over blending. Tracks A and B differ in how they handle steps 3 and 4. 
 </p>
 
 <h3>Track A: tile pipeline (Kerbl et al., SIGGRAPH 2023) </h3>
 <p>
-Track A creates an implementation based on the Kerbl paper. The screen is divided into 16×16 pixel tiles, and the renderer figures out which tiles each Gaussian's 3-σ bounding ellipse touches. It then sorts pairs by a 32-bit composite key (tile index in the upper 16 bits, depth in the lower 16 bits), so each tile ends up with a contiguous list of its Gaussians sorted front-to-back. A custom compute-shader rasterizer walks each pixel's list, accumulating color and transmittance <code>T</code> using the standard alpha-over recurrence, and stops as soon as <code>T &lt; 1/4096</code> (the pixel is effectively opaque, so deeper Gaussians cannot contribute). These are the 8 stages of the pipeline: projectTile, prefixSum (3 passes), duplicateKeys, initPadding, bitonicSort, tileRanges, composite, blit. WebGPU made this awkward in three ways. (1) We replaced the paper's atomics-based <code>cub::DeviceRadixSort</code> with a workgroup-parallel bitonic sort because WebGPU has no built-in radix sort. (2) WebGPU caps <code>workgroupCount.x</code> at 65,535, so dispatches over millions of items required 2D grid reshapes. (3) When sort buffers grow past their capacity, all dependent bind groups have to be invalidated, which is a hazard the paper's CUDA implementation does not state.
+Track A creates an implementation based on the Kerbl paper. The screen is divided into 16×16 pixel tiles, and the renderer figures out which tiles each Gaussian's 3σ bounding ellipse touches. It then sorts pairs by a 32 bit composite key (tile index in the upper 16 bits, depth in the lower 16 bits), so each tile ends up with a contiguous list of its Gaussians sorted front to back. A custom compute shader rasterizer walks each pixel's list, accumulating color and transmittance <code>T</code> using the standard alpha over recurrence, and stops as soon as <code>T &lt; 1/4096</code> (the pixel is effectively opaque, so deeper Gaussians cannot contribute). These are the 8 stages of the pipeline: projectTile, prefixSum (3 passes), duplicateKeys, initPadding, bitonicSort, tileRanges, composite, blit. WebGPU made this awkward in three ways. (1) We replaced the paper's atomics based <code>cub::DeviceRadixSort</code> with a workgroup parallel bitonic sort because WebGPU has no built in radix sort. (2) WebGPU caps <code>workgroupCount.x</code> at 65,535, so dispatches over millions of items required 2D grid reshapes. (3) When sort buffers grow past their capacity, all dependent bind groups have to be invalidated, which is a hazard the paper's CUDA implementation does not state.
 </p>
 
 <h3>Track B: hardware-blend pipeline</h3>
 <p>
-Track B is inspired by EPFL CVLab, which takes a simpler approach used by most web 3DGS viewers. Each Gaussian becomes a screen-space quad emitted by a vertex shader; all Gaussians are sorted globally by depth in one bitonic sort; then the quads are drawn as instanced geometry with hardware alpha blending enabled. There is no tile binning, no per-pixel early termination, and no custom rasterizer. The GPU's standard alpha blender does the compositing. This is structurally simpler, much easier to debug, and faster on small scenes because there is no tile bookkeeping. Its weakness is that on dense scenes the global sort traffic dominates frame time, and that hardware blending without early termination has no way to skip Gaussians once a pixel is opaque.
+Track B is inspired by EPFL CVLab, which takes a simpler approach used by most web 3DGS viewers. Each Gaussian becomes a screen space quad emitted by a vertex shader; all Gaussians are sorted globally by depth in one bitonic sort; then the quads are drawn as instanced geometry with hardware alpha blending enabled. There is no tile binning, no per pixel early termination, and no custom rasterizer. The GPU's standard alpha blender does the compositing. This is structurally simpler, much easier to debug, and faster on small scenes because there is no tile bookkeeping. Its weakness is that on dense scenes the global sort traffic dominates frame time, and that hardware blending without early termination has no way to skip Gaussians once a pixel is opaque.
 </p>
 
 <h3>Deviations from the references</h3>
 <p>
-We replaced the paper's CUDA <code>cub::DeviceRadixSort</code> with a parallel bitonic sort. Spherical harmonics are evaluated to degree 3 using the canonical CUDA reference signs. Track A and Track B share identical EWA projection math and numerical guards (same 0.3·I covariance low-pass floor, same near-plane cull, same <code>1e-8</code> quaternion-length floor) — so any visual divergence between them is localized to the composite stage, not projection. 
+We replaced the paper's CUDA <code>cub::DeviceRadixSort</code> with a parallel bitonic sort. Spherical harmonics are evaluated to degree 3 using the canonical CUDA reference signs. Track A and Track B share identical EWA projection math and numerical guards (same 0.3·I covariance low pass floor, same near plane cull, same <code>1e-8</code> quaternion length floor) — so any visual divergence between them is localized to the composite stage, not projection. 
 </p>
 
 <h3>Problems Encountered</h3>
 <p><strong>Benchmark methodology mistake.</strong> Our first run showed a 12.7× Track A speedup on bicycle — so big we almost      
-  dismissed it. Turns out Track A has a fast path that re-uses the last frame when the camera isn't moving, and our test left the    
-  camera still. After adding moving-camera benchmarks, the 12.7× held up (20.0 vs 1.57 FPS). The number was real; we'd gotten the
+  dismissed it. Turns out Track A has a fast path that reuses the last frame when the camera isn't moving, and our test left the    
+  camera still. After adding moving camera benchmarks, the 12.7× held up (20.0 vs 1.57 FPS). The number was real; we'd gotten the
   right answer for the wrong reason.</p> 
 
-<p><strong>INRIA camera-pose bug.</strong> Loading INRIA's <code>cameras.json</code> for the reference comparison tripped us up    
+<p><strong>INRIA camera pose bug.</strong> Loading INRIA's <code>cameras.json</code> for the reference comparison tripped us up    
   twice. We assumed the test cameras were every 8th entry; they were actually the first N. And the rotation matrix is                
-  camera-to-world, even though a comment in the reference code suggested otherwise. Once we fixed both, our output lined up with
+  camera to world, even though a comment in the reference code suggested otherwise. Once we fixed both, our output lined up with
   INRIA's at every pose.</p>  
 
 <h3>Lessons Learned</h3>
-<p> The cache-hit benchmark and a 0.08 dB SH3-disable test were both useful negative results. They taught us that measurement methodology is a first-class deliverable and that intuition about which optimization will help is unreliable.</p>
+<p> The cache hit benchmark and a 0.08 dB SH3 disable test were both useful negative results. They taught us that measurement methodology is a first class deliverable and that intuition about which optimization will help is unreliable.</p>
 
-<p>A surprising chunk of our time went into stuff that isn't graphics at all — telemetry, benchmark scripts. All of it ended up being necessary. Per-stage GPU timing is what caught the sort bottleneck. The moving-camera bench   
-  kept our speedup numbers honest. And a comparator caught a brown-haze artifact in Track A that we'd otherwise have missed.</p>
+<p>A surprising chunk of our time went into stuff that isn't graphics at all — telemetry, benchmark scripts. All of it ended up being necessary. Per stage GPU timing is what caught the sort bottleneck. The moving camera bench   
+  kept our speedup numbers honest.</p>
   
 <h2>Results</h2>
 
 <h3>Track A vs Track B: a streak artifact on quantized inputs</h3>
 <p>
-On the <code>.splat</code> scenes such as the Nike scene, Track A produces visible streak like artifacts that Track B does not. On the INRIA <code>.ply</code> scenes like the Luigi scene, both renderers produce comparable output and the streak like artifact is not present. Our guess is that the <code>.splat</code> format's 8-bit-quantized rotation quaternions produce degenerate 2D covariances after EWA projection, an issue Track A's per-pixel composite shader is sensitive to but Track B's hardware-blend rasterizer is not. 
+On the <code>.splat</code> scenes such as the Nike scene, Track A produces visible streak like artifacts that Track B does not. On the INRIA <code>.ply</code> scenes like the Luigi scene, both renderers produce comparable output and the streak like artifact is not present. Our guess is that the <code>.splat</code> format's 8 bit quantized rotation quaternions produce degenerate 2D covariances after EWA projection, an issue Track A's per pixel composite shader is sensitive to but Track B's hardware blend rasterizer is not. 
 </p>
 
 <figure>
@@ -127,12 +127,12 @@ On the <code>.splat</code> scenes such as the Nike scene, Track A produces visib
 
 <h3>Performance</h3>
 <p>
-All numbers are measured in real Chrome on a MacBook Pro (Apple M-series, ~200 GB/s memory bandwidth) at 1080p with a moving camera (0.5°/frame yaw) and the camera-skip cache disabled. Each measurement averages 8 frames after a warmup discard.
+All numbers are measured in real Chrome on a MacBook Pro (Apple M-series, ~200 GB/s memory bandwidth) at 1080p with a moving camera (0.5°/frame yaw) and the camera skip cache disabled. Each measurement averages 8 frames after a warmup discard.
 </p>
 
 <table>
   <thead>
-    <tr><th>Scene</th><th class="num">N (Gaussians)</th><th class="num">Track A FPS</th><th class="num">Track B FPS</th><th>Bottleneck</th></tr>
+    <tr><th>Scene</th><th class="num">N (Gaussians)</th><th class="num">Track A FPS</th><th class="num">Track B FPS</th></tr>
   </thead>
   <tbody>
     <tr><td>luigi</td><td class="num">14K</td><td class="num">98.7</td><td class="num">173</td></tr>
@@ -145,7 +145,7 @@ All numbers are measured in real Chrome on a MacBook Pro (Apple M-series, ~200 G
 </table>
 
 <p>
-Track B is faster on small scenes (≤281K Gaussians) where its lower overhead wins; Track A is dramatically faster on large scenes where its per-tile binning evades the global sort. On bicycle and garden, Track A delivers 12.7× and 12.4× speedups — empirical confirmation that the Kerbl paper's tile-based design is the right architecture at this scale, even through our WebGPU implementation.
+Track B is faster on small scenes (≤281K Gaussians) where its lower overhead wins; Track A is dramatically faster on large scenes where its per tile binning evades the global sort. On bicycle and garden, Track A delivers 12.7× and 12.4× speedups — empirical confirmation that the Kerbl paper's tile based design is the right architecture at this scale, even through our WebGPU implementation.
 </p>
 
 <h2>References</h2>
@@ -162,15 +162,15 @@ Track B is faster on small scenes (≤281K Gaussians) where its lower overhead w
 
 <h2>Contributions from each team member</h2>
 <p>
-  Kaan Kont — Authored the Track A tile pipeline (eight-pass compute pipeline with bitonic sort and per-pixel front-to-back composite). Built the benchmark harness. 
+  Kaan Kont — Authored the Track A tile pipeline (eight pass compute pipeline with bitonic sort and per pixel front to back composite). Built the benchmark harness. 
 </p>
 
 <p>
-  Ben Shamloufard — Authored the Track B pipeline (vertex-shader projection, global sort, hardware alpha blend). Built the CPU reference renderer and the .ply / .splat parsers.
+  Ben Shamloufard — Authored the Track B pipeline (vertex shader projection, global sort, hardware alpha blend). Built the CPU reference renderer and the .ply / .splat parsers.
 </p>
 
 <p>
-  Alex Zhu — Authored spherical harmonics evaluation used by both tracks, camera controls (orbit, WASD, pan), and the HTML viewer with the seven-mode visualization switcher and live telemetry overlay.
+  Alex Zhu — Authored spherical harmonics evaluation used by both tracks, camera controls (orbit, WASD, pan), and the HTML viewer with the seven mode visualization switcher and live telemetry overlay.
 </p>
 
 </body>
