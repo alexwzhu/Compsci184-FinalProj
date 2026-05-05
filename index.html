@@ -131,32 +131,6 @@ On the <code>.splat</code> scenes such as the Nike scene, Track A produces visib
   <figcaption>Figure 3. Track A vs Track B on the <code>.splat</code> Nike scene and the <code>.code</code> Luigi scene.</figcaption>
 </figure>
 
-<h3>INRIA reference comparison</h3>
-<p>
-We validate Track A against INRIA's published CUDA reference by rendering the same scenes from the same calibrated test camera poses (INRIA's sequential test-pose split: the first 39, 25, and 24 cameras of room, bicycle, garden) and computing per-pose PSNR and SSIM in sRGB-encoded image space.
-</p>
-
-<table>
-  <thead>
-    <tr><th>Scene</th><th class="num">N poses</th><th class="num">Mean PSNR (dB)</th><th class="num">Median</th><th class="num">Max</th><th class="num">Mean SSIM</th></tr>
-  </thead>
-  <tbody>
-    <tr><td>room</td><td class="num">39</td><td class="num">14.40</td><td class="num">13.48</td><td class="num">23.44</td><td class="num">0.5367</td></tr>
-    <tr><td>bicycle</td><td class="num">25</td><td class="num">15.23</td><td class="num">16.31</td><td class="num">24.25</td><td class="num">0.4825</td></tr>
-    <tr><td>garden</td><td class="num">24</td><td class="num">17.12</td><td class="num">17.19</td><td class="num">23.41</td><td class="num">0.6025</td></tr>
-    <tr><td><strong>overall</strong></td><td class="num"><strong>88</strong></td><td class="num"><strong>15.38</strong></td><td class="num"><strong>15.28</strong></td><td class="num"><strong>24.25</strong></td><td class="num"><strong>0.5393</strong></td></tr>
-  </tbody>
-</table>
-
-<figure>
-  <img src="images/garden-pose0-comparison.png" alt="Garden test pose 0: ours, INRIA reference, and difference image.">
-  <figcaption>Figure 4. Garden, test pose 0 (the highest-PSNR pose; median garden pose is 17.19 dB). Left: Track A. Center: INRIA reference. Right: 4× difference. PSNR 21.27 dB, SSIM 0.71.</figcaption>
-</figure>
-
-<p>
-Two factors contribute to the gap from the paper's reported ~28–30 dB. First, our PSNR is computed in sRGB-encoded image space (8-bit PNG, no gamma-to-linear conversion), which is typically 3–5 dB lower than radiometrically-correct linear PSNR on the same data — an apples-to-oranges comparison with Kerbl's numbers. Second, a coverage-dependent brown-haze artifact in our WGSL composite shader causes sparse-coverage pixels (background, sparse foliage) to acquire a uniform color cast; toggling SH degree 3 changed PSNR by only 0.08 dB, isolating the residual issue to alpha-accumulation rather than view-dependent shading.
-</p>
-
 <h3>Performance</h3>
 <p>
 All numbers are measured in real Chrome on a MacBook Pro (Apple M-series, ~200 GB/s memory bandwidth) at 1080p with a moving camera (0.5°/frame yaw) and the camera-skip cache disabled. Each measurement averages 8 frames after a warmup discard.
@@ -177,7 +151,7 @@ All numbers are measured in real Chrome on a MacBook Pro (Apple M-series, ~200 G
 </table>
 
 <p>
-The crossover between the two pipelines is the headline performance result. <strong>Track B is faster on small scenes (≤281K Gaussians) where its lower overhead wins; Track A is dramatically faster on large scenes where its per-tile binning evades the global sort.</strong> On bicycle and garden, Track A delivers 12.7× and 12.4× speedups, taking the live demo from non-interactive (~1.6 FPS) to genuinely interactive (~20 FPS) at 1080p — empirical confirmation that the Kerbl paper's tile-based design is the right architectural choice at this scale, even when ported to WebGPU.
+Track B is faster on small scenes (≤281K Gaussians) where its lower overhead wins; Track A is dramatically faster on large scenes where its per-tile binning evades the global sort. On bicycle and garden, Track A delivers 12.7× and 12.4× speedups — empirical confirmation that the Kerbl paper's tile-based design is the right architecture at this scale, even through our WebGPU implementation.
 </p>
 
 <p>
