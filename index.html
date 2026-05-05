@@ -122,12 +122,13 @@ We replaced the paper's CUDA <code>cub::DeviceRadixSort</code> with a parallel b
 
 <h3>Track A vs Track B: a streak artifact on quantized inputs</h3>
 <p>
-On the cakewalk-format <code>.splat</code> scenes (Nike, plush), Track A produces visible streak artifacts that Track B does not. The artifacts are most pronounced at grazing-angle Gaussians: laces, fur, and thin geometric features stretch into long needles in Track A but render cleanly in Track B. On the INRIA <code>.ply</code> scenes (room, bicycle, garden), both renderers produce comparable output and the streak failure mode is not observed. Our working hypothesis is that the <code>.splat</code> format's 8-bit-quantized rotation quaternions produce degenerate 2D covariances after EWA projection — a numerical issue Track A's per-pixel composite shader is sensitive to but Track B's hardware-blend rasterizer is not. Because the two pipelines share identical projection math, any divergence is localized to the composite stage. Rigorous verification of the mechanism is future work; the format-sensitivity itself is reproducible across multiple <code>.splat</code> scenes.
+On the <code>.splat</code> scenes such as the Nike scene, Track A produces visible streak like artifacts that Track B does not. On the INRIA <code>.ply</code> scenes like the Luigi scene, both renderers produce comparable output and the streak like artifact is not present. Our guess is that the <code>.splat</code> format's 8-bit-quantized rotation quaternions produce degenerate 2D covariances after EWA projection, an issue Track A's per-pixel composite shader is sensitive to but Track B's hardware-blend rasterizer is not. 
 </p>
 
 <figure>
-  <img src="images/streak-comparison.png" alt="Track A versus Track B on Nike and plush scenes, showing streak artifacts in Track A absent from Track B.">
-  <figcaption>Figure 3. Track A vs Track B on the cakewalk-format <code>.splat</code> scenes. Top: Nike. Bottom: plush. Track A (left) shows streak/spike artifacts on both; Track B (right) renders cleanly. The effect is absent on full-precision INRIA <code>.ply</code> scenes.</figcaption>
+  <img src="images/cs184-nike.png">
+  <img src="images/cs184-luigi.png">
+  <figcaption>Figure 3. Track A vs Track B on the <code>.splat</code> Nike scene and the <code>.code</code> Luigi scene.</figcaption>
 </figure>
 
 <h3>INRIA reference comparison</h3>
